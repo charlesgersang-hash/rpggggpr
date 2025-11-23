@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Quest of Dawn - Mini RPG</title>
+<style>
+    body {
+        background: #111;
+        color: #eee;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+    }
+    #log {
+        width: 100%;
+        height: 300px;
+        background: #222;
+        padding: 10px;
+        overflow-y: auto;
+        border: 2px solid #444;
+        margin-bottom: 10px;
+    }
+    button {
+        padding: 10px 20px;
+        margin: 5px;
+        background: #444;
+        border: 1px solid #666;
+        color: white;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #666;
+    }
+</style>
+</head>
+<body>
+
+<h1>⚔️ Quest of Dawn – Mini RPG</h1>
+<div id="log"></div>
+
+<button onclick="attack()">Serang</button>
+<button onclick="heal()">Heal</button>
+<button onclick="nextEnemy()">Musuh Berikutnya</button>
+
+<script>
+let player = {
+    hp: 30,
+    maxHp: 30,
+    attack: 6,
+    level: 1,
+    exp: 0
+};
+
+let enemy = {};
+const log = document.getElementById("log");
+
+function write(text) {
+    log.innerHTML += text + "<br>";
+    log.scrollTop = log.scrollHeight;
+}
+
+function createEnemy() {
+    const names = ["Goblin", "Skeleton", "Bandit", "Wolf", "Dark Slime"];
+    let name = names[Math.floor(Math.random() * names.length)];
+
+    enemy = {
+        name,
+        hp: Math.floor(15 + Math.random() * 10 + player.level * 2),
+        attack: Math.floor(4 + Math.random() * 3 + player.level),
+        exp: Math.floor(6 + Math.random() * 5)
+    };
+
+    write(`<b>Musuh muncul!</b> ${enemy.name} (HP: ${enemy.hp})`);
+}
+
+function attack() {
+    if (enemy.hp <= 0) return write("Musuh sudah mati. Tekan 'Musuh Berikutnya'.");
+
+    let dmg = Math.floor(Math.random() * player.attack) + 1;
+    enemy.hp -= dmg;
+
+    write(`Kamu menyerang ${enemy.name} dan memberi ${dmg} damage.`);
+
+    if (enemy.hp <= 0) {
+        write(`<b>${enemy.name} dikalahkan!</b>`);
+        player.exp += enemy.exp;
+        write(`Kamu mendapat ${enemy.exp} EXP.`);
+        levelUpCheck();
+        return;
+    }
+
+    enemyAttack();
+}
+
+function enemyAttack() {
+    let dmg = Math.floor(Math.random() * enemy.attack) + 1;
+    player.hp -= dmg;
+    write(`${enemy.name} menyerang dan memberi ${dmg} damage. (HP kamu: ${player.hp})`);
+
+    if (player.hp <= 0) {
+        write("<b>Kamu kalah! Game Over.</b>");
+        disableButtons();
+    }
+}
+
+function heal() {
+    if (player.hp <= 0) return;
+
+    let amount = Math.floor(5 + Math.random() * 8);
+    player.hp = Math.min(player.maxHp, player.hp + amount);
+    write(`Kamu menggunakan heal dan memulihkan ${amount} HP. (HP: ${player.hp})`);
+
+    enemyAttack();
+}
+
+function nextEnemy() {
+    if (player.hp <= 0) return;
+    createEnemy();
+}
+
+function levelUpCheck() {
+    const need = player.level * 20;
+    if (player.exp >= need) {
+        player.level++;
+        player.exp = 0;
+        player.maxHp += 5;
+        player.hp = player.maxHp;
+        player.attack += 2;
+
+        write(`<b>LEVEL UP!</b> Kamu sekarang level ${player.level}!`);
+        write(`Stat meningkat! HP Max: ${player.maxHp}, Attack: ${player.attack}`);
+    }
+}
+
+function disableButtons() {
+    document.querySelectorAll("button").forEach(b => b.disabled = true);
+}
+
+write("<b>Petualangan dimulai!</b>");
+createEnemy();
+</script>
+
+</body>
+</html>
